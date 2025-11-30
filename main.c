@@ -25,7 +25,28 @@ Patient patients[MAX_PATIENTS];
 Record records[MAX_RECORDS];
 int patientCount = 0;//GLOBAL VARIABLE
 int recordCount = 0;//GLOBAL VARIABLE
-
+void printMenu();
+void removeNewline();
+int isStringEqualIgnoreCase(const char *s1, const char *s2);
+int findIndexPatient(char *id);
+int isNumeric(const char *str);
+int isValidDate( char *date);
+//#1
+void addPatient();
+//#2
+void updatePatient();
+//#3
+void dischargePatient();
+//#4
+void listPatients();
+//#5
+void searchPatient();
+//#6
+void sortPatients();
+//#7
+void addRecordPatient();
+//#8
+void viewMedicalHistory();
 void printMenu() {
     printf("|------------------------------------------------------------|\n");
     printf("|                  PATIENT MANAGEMENT MENU                   |\n");
@@ -43,7 +64,6 @@ void printMenu() {
     printf("|               PLEASE ENTER YOUR CHOICE ~^^~                |\n");
     printf("|------------------------------------------------------------|\n");
 }
-
 void removeNewline(char *str) {
     int len = strlen(str);
     if (str[len - 1] == '\n' && len > 0) {
@@ -64,7 +84,7 @@ int isStringEqualIgnoreCase(const char *s1, const char *s2) {
 }
 int findIndexPatient(char *id) {//
     for ( int i = 0; i < patientCount; i++ ) {
-        if (isStringEqualIgnoreCase(patients[i].cardID, id) == 0) {
+        if (isStringEqualIgnoreCase(patients[i].cardID, id)) {
             return i;
         }
     }
@@ -106,13 +126,71 @@ int isValidDate(char *date) {
     }
     int daysInMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     if ((y % 4 == 0 && y % 100 != 0) || (y % 400 == 0)) {// Ktra nam nhuan
-        daysInMonth[1] = 29;
+        daysInMonth[2] = 29;
     }
 
     if (d < 1 || d > daysInMonth[m]) {
         return 0;
     }
     return 1; // Hop le
+}
+int main() {
+int choice = 0;
+char buffer[100];
+while (1){
+    printMenu();
+    while (1) {
+    printf("Your choice: ");
+    if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
+        break;
+    }
+    if (strcmp(buffer,"\n") == 0) {
+        printf("Input cannot be empty. Please enter a number (1-9).\n");
+        continue;
+    }
+    if (sscanf(buffer,"%d",&choice) == 1) {
+        if (choice >= 1 && choice <= 9) {
+            break;//VALID
+        } else {
+            printf("Number must be between 1 and 9.\n");
+        }
+        // Truong hop nhat ky tu dac biet hoac chu cai
+    } else {
+        printf("Invalid input! Please enter a digit.\n");
+    }
+}
+        switch (choice) {
+            case 1:
+                addPatient();
+                break;
+            case 2:
+                updatePatient();
+                break;
+            case 3:
+                dischargePatient();
+                break;
+            case 4:
+                listPatients();
+                break;
+            case 5:
+                searchPatient();
+                break;
+            case 6:
+                sortPatients();
+                break;
+            case 7:
+                addRecordPatient();
+                break;
+            case 8:
+                viewMedicalHistory();
+                break;
+            case 9:
+                printf("Exitting program...Goodbye!\n");
+                exit(0);
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    }
 }
 
 // #1
@@ -131,6 +209,17 @@ void addPatient() {
         removeNewline(p.cardID);
         if (strlen(p.cardID) == 0) { // Empty
             printf("Error! Patient card ID cannot be empty.\n");
+            continue;
+        }
+        int hasSpace = 0;
+        for (int i = 0; i < strlen(p.cardID); i++) {
+            if (isspace((unsigned char)p.cardID[i])) {
+                hasSpace = 1;
+                break;
+            }
+        }
+        if (hasSpace) {
+            printf(">> Error! Patient Card ID cannot has space.\n");
             continue;
         }
         if (p.cardID[0] == ' ') {// Start with space
@@ -239,7 +328,7 @@ void addPatient() {
         patients[patientCount] = p;
         patientCount++;
         printf("Success!!! New patient added into patient list.\n");
-    }
+}
 
 // #2
 void updatePatient() {
@@ -312,6 +401,7 @@ void updatePatient() {
         printf("Error!Invalid phone number ( must be minimum 9 digits, maximum 12 digits and only number ).\n");
     }
 }
+
 // #3
 void dischargePatient(){
     char id[20];
@@ -337,7 +427,6 @@ void dischargePatient(){
         printf("Error:Patient already discharged previously.\n");
         return;
     }
-
     //Debt warning
     if (patients[index].debt > 0) {
         printf("WARNING: Patient has an outstanding debt of %.2f.\n", patients[index].debt);
@@ -551,59 +640,204 @@ void sortPatients() {
         listPatients();
     }
 }
-int main() {
-int choice = 0;
-char buffer[100];
-while (1){
-    printMenu();
+//#7
+void addRecordPatient() {
+    if (recordCount >= MAX_RECORDS) {
+        printf("Record full.\n");
+        return;
+    }
+    char id[20];
+    char date[20];
+    char buffer[100];//buffer cho viec nhap lieu
+    printf("\n--- ADD RECORD ---\n");
+    int idx = -1;
     while (1) {
-    printf("Your choice: ");
-    if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
-        break;
-    }
-    if (strcmp(buffer,"\n") == 0) {
-        printf("Input cannot be empty. Please enter a number (1-9).\n");
-        continue;
-    }
-    if (sscanf(buffer,"%d",&choice) == 1) {
-        if (choice >= 1 && choice <= 9) {
-            break;//VALID
-        } else {
-            printf("Number must be between 1 and 9.\n");
+        printf("Enter Patient ID (or enter '0' to return to menu): ");
+        fflush(stdin);
+        if (fgets(id,sizeof(id),stdin) == NULL) {
+            continue;
         }
-        // Truong hop nhat ky tu dac biet hoac chu cai
-    } else {
-        printf("Invalid input! Please enter a digit.\n");
+        removeNewline(id);
+        if (strcmp(id, "0") == 0) {
+            printf(">> Operation cancelled by user.\n");
+            return; // Thoát khỏi hàm addRecordPatient, quay về Main Menu
+        }
+        if ( strlen(id) == 0) {
+            printf(">> Error: Input cannot be empty.\n");
+            continue;
+        }
+        if (id[0] == ' ') {
+            printf(">> Error: ID cannot start with space.\n");
+            continue;
+        }
+        int hasSpace = 0;
+        for (int i = 0; i < strlen(id); i++) {
+            if (isspace((unsigned char)id[i])) {
+                hasSpace = 1;
+                break;
+            }
+        }
+        if (hasSpace) {
+            printf(">> Error! Patient Card ID cannot has space.\n");
+            continue;
+        }
+        idx = findIndexPatient(id);
+        if (idx == -1) {
+            printf(">> Error: Patient with ID '%s' not found. Please try again.\n", id);
+        }else {
+            printf("-------PATIENT FOUND-------\n");
+            printf("-------------------------------------------------------------------------------\n");
+            printf("%-10s %-25s %-15s %-15s %-10s\n", "ID", "Name", "Phone", "Debt", "Visits");
+            printf("-------------------------------------------------------------------------------\n");
+            printf("%-10s %-25s %-15s %-15.0f %-10d\n",
+                       patients[idx].cardID,
+                       patients[idx].name,
+                       patients[idx].phone,
+                       patients[idx].debt,
+                       patients[idx].visitDays);
+            break;
+        }
     }
+    while (1) {
+        printf("Enter Date (dd/mm/yyyy) (or enter '0' to return to menu): ");
+        fflush(stdin);
+        fgets(date, sizeof(date), stdin);
+        removeNewline(date);
+        if (strcmp(date, "0") == 0) {
+            printf(">> Operation cancelled by user.\n");
+            return; // Thoát chức năng, quay về Menu
+        }
+        if (!isValidDate(date)) {
+            printf(">> Error: Invalid date format or logic (use dd/mm/yyyy).\n");
+            continue;
+        }
+        int isDuplicate = 0;
+        for (int i = 0; i < recordCount; i++) {
+            if (strcmp(records[i].cardId, id) == 0 && strcmp(records[i].date, date) == 0) {
+                isDuplicate = 1;
+                break;
+            }
+        }if (isDuplicate) {
+            printf(">> Error: Patient '%s' already has a record on %s.\n", id, date);
+            return; // exit
+        }
+        break; // Date is valid
+    }
+    // Status selection
+    int stChoice = 0;
+    char status[20];
+    while(1) {
+        printf("Select Status:\n");
+        printf("1. Check-up (Tai kham)\n");
+        printf("2. Discharged (Xuat vien)\n");
+        printf("Your Choice: ");
+        if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
+            continue;
+        }
+        if (sscanf(buffer, "%d", &stChoice) == 1) {
+            if (stChoice == 1) {
+                strcpy(status, "Check-up");
+                break;
+            } else if (stChoice == 2) {
+                strcpy(status, "Discharged");
+                break;
+            }
+        }
+        printf(">> Error: Invalid choice. Please JUST enter 1 or 2.\n");
+    }
+    Record r;
+    sprintf(r.recID, "%d", recordCount + 101);
+    strcpy(r.cardId, id);
+    strcpy(r.date, date);
+    strcpy(r.status, status);
+
+    records[recordCount] = r;
+    recordCount++;
+    patients[idx].visitDays++;
+
+    printf(">> SUCCESS: Medical check recorded.\n");
+    printf("   RecID: %s | Status: %s | Date: %s\n", r.recID, r.status, r.date);
 }
-        switch (choice) {
-            case 1:
-                addPatient();
+// #8: View Medical History
+void viewMedicalHistory() {
+    // Kiểm tra nếu chưa có hồ sơ nào
+    if (recordCount == 0) {
+        printf(">> No medical records available in the system.\n");
+        return;
+    }
+    char id[20];
+    int idx = -1;
+
+    printf("\n--- VIEW MEDICAL HISTORY ---\n");
+
+    // --- NHẬP VÀ VALIDATE PATIENT ID
+    while (1) {
+        printf("Enter Patient Card ID to view history (or enter '0' to return): ");
+        fflush(stdin);
+
+        // 1. Nhập liệu an toàn
+        if (fgets(id, sizeof(id), stdin) == NULL) {
+            continue;
+        }
+        removeNewline(id);
+        // 2. Cửa thoát hiểm (Nhập '0' để quay lại menu)
+        if (strcmp(id, "0") == 0) {
+            printf(">> Operation cancelled by user.\n");
+            return;
+        }
+        // 3. Validate : Rỗng
+        if (strlen(id) == 0) {
+            printf(">> Error: Input cannot be empty.\n");
+            continue;
+        }
+        // 4. Validate: Ký tự đầu là khoảng trắng
+        if (id[0] == ' ') {
+            printf(">> Error: ID cannot start with space.\n");
+            continue;
+        }
+        // 5. Validate: Chứa khoảng trắng ở giữa
+        int hasSpace = 0;
+        for (int i = 0; i < strlen(id); i++) {
+            if (isspace((unsigned char)id[i])) {
+                hasSpace = 1;
                 break;
-            case 2:
-                updatePatient();
-                break;
-            case 3:
-                dischargePatient();
-                break;
-            case 4:
-                listPatients();
-                break;
-            case 5:
-                searchPatient();
-                break;
-            case 6:
-                sortPatients();
-                break;
-            case 7:
-                break;
-            case 8:
-                break;
-            case 9:
-                printf("Exitting program...Goodbye!\n");
-                exit(0);
-            default:
-                printf("Invalid choice! Please try again.\n");
+            }
+        }
+        if (hasSpace) {
+            printf(">> Error: ID cannot contain spaces.\n");
+            continue;
+        }
+        // 6. Kiểm tra tồn tại trong danh sách Bệnh nhân
+        idx = findIndexPatient(id);
+        if (idx == -1) {
+            printf(">> Error: Patient with ID '%s' not found. Please try again.\n", id);
+        } else {
+            // Tìm thấy bệnh nhân -> Thoát vòng lặp nhập để hiển thị dữ liệu
+            break;
         }
     }
+
+    // --- HIỂN THỊ LỊCH SỬ KHÁM ---
+    printf("\nMedical History for Patient: %s (ID: %s)\n", patients[idx].name, patients[idx].cardID);
+    printf("------------------------------------------------------------\n");
+    printf("%-10s | %-15s | %-20s\n", "Rec ID", "Date", "Status");
+    printf("------------------------------------------------------------\n");
+
+    int foundRecord = 0;
+    // Duyệt mảng records để tìm các lần khám của bệnh nhân này
+    for (int i = 0; i < recordCount; i++) {
+        // So sánh CardID trong record với ID vừa nhập
+        if (isStringEqualIgnoreCase(records[i].cardId, id) == 0) {
+            printf("%-10s | %-15s | %-20s\n",
+                   records[i].recID,
+                   records[i].date,
+                   records[i].status);
+            foundRecord = 1;
+        }
+    }
+
+    if (!foundRecord) {
+        printf(">> No medical history found for this patient.\n");
+    }
+    printf("------------------------------------------------------------\n");
 }
