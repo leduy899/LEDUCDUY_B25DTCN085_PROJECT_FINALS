@@ -31,13 +31,8 @@ int isStringEqualIgnoreCase(const char *s1, const char *s2);
 int findIndexPatient(char *id);
 int isNumeric(const char *str);
 int isValidDate( char *date);
-// Hàm chuyển đổi chuỗi sang chữ thường (để phục vụ tìm kiếm)
-void toLowerCase(char *dest, const char *src) {
-    for (int i = 0; src[i]; i++) {
-        dest[i] = tolower((unsigned char)src[i]);
-    }
-    dest[strlen(src)] = '\0'; // Kết thúc chuỗi
-}
+void toLowerCase(char *dest, const char *src);
+
 //#1
 void addPatient();
 //#2
@@ -96,6 +91,13 @@ int findIndexPatient(char *id) {//
         }
     }
     return -1;
+}
+// Hàm chuyển đổi chuỗi sang chữ thường (để phục vụ tìm kiếm)
+void toLowerCase(char *dest, const char *src) {
+    for (int i = 0; src[i]; i++) {
+        dest[i] = tolower((unsigned char)src[i]);
+    }
+    dest[strlen(src)] = '\0'; // Kết thúc chuỗi
 }
 int isNumeric(const char* str) {
     for (int i = 0; i < strlen(str); i++) {
@@ -336,7 +338,7 @@ void addPatient() {
         patientCount++;
         printf("Success!!! New patient added into patient list.\n");
 }
-// #2: Update Patient Info 
+// #2: Update Patient Info
 void updatePatient() {
     char id[20];
     int index = -1;
@@ -347,7 +349,7 @@ void updatePatient() {
     while (1) {
         printf("Enter Card ID to update (or enter '0' to return): ");
         fflush(stdin);
-        
+
         // Nhập liệu
         if (fgets(id, sizeof(id), stdin) == NULL) continue;
         removeNewline(id);
@@ -370,20 +372,20 @@ void updatePatient() {
 
         // 3. Tìm kiếm trong danh sách
         index = findIndexPatient(id);
-        
+
         if (index == -1) {
             // KHÔNG tìm thấy -> Báo lỗi và LẶP LẠI (continue)
             printf(">> Error: Patient with ID '%s' not found. Please try again.\n", id);
         } else {
             // TÌM THẤY -> Thoát vòng lặp nhập ID để đi tiếp
-            break; 
+            break;
         }
     }
 
     // --- BƯỚC 2: KIỂM TRA TRẠNG THÁI "DISCHARGED" ---
     char lastStatus[20] = "";
     int hasRecord = 0;
-    
+
     for (int i = 0; i < recordCount; i++) {
         // Dùng isStringEqualIgnoreCase để khớp ID chính xác bất kể hoa thường
         if (isStringEqualIgnoreCase(records[i].cardId, id)) {
@@ -399,14 +401,14 @@ void updatePatient() {
     // --- BƯỚC 3: NHẬP SỐ ĐIỆN THOẠI MỚI (Lặp cho đến khi đúng hoặc nhập 0) ---
     char newPhoneNumber[15];
     printf("------------------------------------\n");
-    printf("Current Info: ID: %s | Name: %s | Phone: %s\n", 
+    printf("Current Info: ID: %s | Name: %s | Phone: %s\n",
            patients[index].cardID, patients[index].name, patients[index].phone);
     printf("------------------------------------\n");
-    
+
     while (1) {
         printf("Enter new phone number (9-12 digits) (or '0' to Cancel): ");
         fflush(stdin);
-        
+
         if (fgets(newPhoneNumber, sizeof(newPhoneNumber), stdin) == NULL) continue;
         removeNewline(newPhoneNumber);
 
@@ -416,7 +418,7 @@ void updatePatient() {
             continue;
         }
 
-        // 2. Cửa thoát hiểm (Cancel update)
+        // 2. Cửa thoát hiểm
         if (strcmp(newPhoneNumber, "0") == 0) {
             printf(">> Update cancelled by user.\n");
             return;
@@ -448,20 +450,48 @@ void updatePatient() {
 // #3
 void dischargePatient(){
     char id[20];
+    int index = -1;
     printf("\n---DISCHARGE PATIENT ---\n");
-    printf("Enter Card ID to discharge: ");
-    fflush(stdin);
-    fgets(id,sizeof(id),stdin);
-    removeNewline(id);
-    int index = findIndexPatient(id);
-    if (index == -1) {
-        printf("Error!Patient not found!\n");
-        return;
+    while (1) {
+        printf("Enter Card ID to discharge: ");
+        fflush(stdin);
+        if (fgets(id, sizeof(id), stdin) == NULL) {
+            continue;
+        }
+        removeNewline(id);
+        if (strlen(id) == 0) {
+            printf(">> Error: ID cannot be empty.\n");
+            continue;
+        }
+        if (id[0] == ' ') {
+            printf(">> Error: ID cannot start with space.\n");
+            continue;
+        }
+        // Validate khoảng trắng giữa
+        int hasSpace = 0;
+        for (int i = 0; i < strlen(id); i++) {
+            if (isspace((unsigned char)id[i])) {
+                hasSpace = 1;
+                break;
+            }
+        }
+        if (hasSpace) {
+            printf(">> Error: ID cannot contain spaces.\n");
+            continue;
+        }
+        index = findIndexPatient(id);
+        if (index == -1) {
+            printf(">> Error: Patient with ID '%s' not found. Please try again.\n", id);
+            return;
+        }else {
+            printf("\n>> Found Patient: %s | Debt: %.0f\n", patients[index].name, patients[index].debt);
+            break; // Thoát vòng lặp nhập ID
+        }
     }
     char lastStatus[20] = "";
     int hasRecord = 0;
     for ( int i = 0 ; i < recordCount; i ++) {
-        if (strcmp(records[i].cardId,id) == 0) {
+        if (isStringEqualIgnoreCase(records[i].cardId,id) == 0) {
             strcpy(lastStatus,records[i].status);
             hasRecord = 1;
         }
@@ -480,8 +510,8 @@ void dischargePatient(){
             scanf("%c",&confirm);
             fflush((stdin));
             if (confirm == 'n' || confirm == 'N') {
-                printf("Cancelled.\n");
-                break;
+                printf("Discharge Cancelled by User.\n");
+                return;
             }else if (confirm == 'y' || confirm == 'Y') {
                 // if (recordCount >= MAX_RECORDS) {
                 //     printf("Error: Record memory full. Cannot save discharge history.\n");
@@ -498,7 +528,7 @@ void dischargePatient(){
                 //     printf("Error! Invalid date format\n");
                 // }
                 // Record r;
-                // sprintf(r.recID,"%d",recordCount + 1000);//tạo ID
+                // sprintf(r.recID,"%d",recordCount + 101);//tạo ID
                 // strcpy(r.cardId,id);
                 // strcpy(r.date,date);
                 // strcpy(r.status,"Discharged");
