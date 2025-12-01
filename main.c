@@ -336,79 +336,115 @@ void addPatient() {
         patientCount++;
         printf("Success!!! New patient added into patient list.\n");
 }
-
-// #2
+// #2: Update Patient Info 
 void updatePatient() {
     char id[20];
-    printf("\n---UPDATE PATIENT INFO ---\n");
-    printf("Enter Card ID to update: ");
-    fflush(stdin);
-    fgets(id,sizeof(id),stdin);
-    removeNewline(id);
-    int index = findIndexPatient(id);
-    if (index == -1) {
-        printf("Error! Patient not found!\n");
-        return;
+    int index = -1;
+
+    printf("\n--- F02: UPDATE PATIENT INFO ---\n");
+
+    // --- BƯỚC 1: TÌM KIẾM BỆNH NHÂN (Lặp cho đến khi tìm thấy hoặc nhập 0) ---
+    while (1) {
+        printf("Enter Card ID to update (or enter '0' to return): ");
+        fflush(stdin);
+        
+        // Nhập liệu
+        if (fgets(id, sizeof(id), stdin) == NULL) continue;
+        removeNewline(id);
+
+        // 1. Cửa thoát hiểm
+        if (strcmp(id, "0") == 0) {
+            printf(">> Operation cancelled by user.\n");
+            return; // Thoát về menu
+        }
+
+        // 2. Validate cơ bản
+        if (strlen(id) == 0) {
+            printf(">> Error: ID cannot be empty.\n");
+            continue;
+        }
+        if (id[0] == ' ') {
+            printf(">> Error: ID cannot start with space.\n");
+            continue;
+        }
+
+        // 3. Tìm kiếm trong danh sách
+        index = findIndexPatient(id);
+        
+        if (index == -1) {
+            // KHÔNG tìm thấy -> Báo lỗi và LẶP LẠI (continue)
+            printf(">> Error: Patient with ID '%s' not found. Please try again.\n", id);
+        } else {
+            // TÌM THẤY -> Thoát vòng lặp nhập ID để đi tiếp
+            break; 
+        }
     }
+
+    // --- BƯỚC 2: KIỂM TRA TRẠNG THÁI "DISCHARGED" ---
     char lastStatus[20] = "";
     int hasRecord = 0;
-    // Scan records to find the latest status for this patient
-    for ( int i = 0 ; i < recordCount; i ++) {
-        if (strcmp(records[i].cardId,id) == 0) {
-            strcpy(lastStatus,records[i].status);
+    
+    for (int i = 0; i < recordCount; i++) {
+        // Dùng isStringEqualIgnoreCase để khớp ID chính xác bất kể hoa thường
+        if (isStringEqualIgnoreCase(records[i].cardId, id)) {
+            strcpy(lastStatus, records[i].status);
             hasRecord = 1;
         }
     }
-    if (hasRecord == 1 && strcmp(lastStatus,"Discharged") == 0 ) {
-        printf("Error: Cannot update. Patient has been already Discharged (Status: Discharged).\n");
+    if (hasRecord == 1 && strcmp(lastStatus, "Discharged") == 0) {
+        printf(">> Error: Cannot update. Patient '%s' has been Discharged.\n", patients[index].name);
         return;
     }
+
+    // --- BƯỚC 3: NHẬP SỐ ĐIỆN THOẠI MỚI (Lặp cho đến khi đúng hoặc nhập 0) ---
     char newPhoneNumber[15];
-    printf("Current Card ID: %s\n",patients[index].cardID);
-    printf("Current Patient's Name: %s\n",patients[index].name);
-    printf("Current phone number: %s\n ",patients[index].phone);
     printf("------------------------------------\n");
-    printf("(Enter '0' to Cancel update)\n");
+    printf("Current Info: ID: %s | Name: %s | Phone: %s\n", 
+           patients[index].cardID, patients[index].name, patients[index].phone);
+    printf("------------------------------------\n");
+    
     while (1) {
-        printf("Enter new phone number (min 9 digits, max 12 digits, number only): ");
+        printf("Enter new phone number (9-12 digits) (or '0' to Cancel): ");
         fflush(stdin);
-        fgets(newPhoneNumber,sizeof(newPhoneNumber),stdin);
+        
+        if (fgets(newPhoneNumber, sizeof(newPhoneNumber), stdin) == NULL) continue;
         removeNewline(newPhoneNumber);
 
+        // 1. Check Empty
         if (strlen(newPhoneNumber) == 0) {
-            printf("Error! Phone number cannot be empty.\n");
+            printf(">> Error: Phone number cannot be empty.\n");
             continue;
         }
-        // Check CANCEL
+
+        // 2. Cửa thoát hiểm (Cancel update)
         if (strcmp(newPhoneNumber, "0") == 0) {
             printf(">> Update cancelled by user.\n");
             return;
         }
+
+        // 3. Validate Space
         if (newPhoneNumber[0] == ' ') {
-            printf("Error! Phone number cannot start with a space.\n");
+            printf(">> Error: Phone number cannot start with a space.\n");
             continue;
         }
 
-        int isNumberValid = 1;
-        for ( int i = 0 ; i < strlen(newPhoneNumber) ; i++ ) {
-            if (!isdigit((unsigned char)newPhoneNumber[i])) {
-                isNumberValid = 0;
-                break;
-            }
-        }
-        if (!isNumberValid) {
-            printf("Error!Phone number can only contain number digits.\n");
+        // 4. Validate Numeric
+        if (!isNumeric(newPhoneNumber)) {
+            printf(">> Error: Phone number can only contain digits.\n");
             continue;
         }
-        if (strlen(newPhoneNumber) >= 9 && strlen(newPhoneNumber) <=12) {//TRUE
-            strcpy(patients[index].phone,newPhoneNumber);
-            printf("Success!!! Update sucessful.\n");
-            break;
+
+        // 5. Validate Length
+        if (strlen(newPhoneNumber) >= 9 && strlen(newPhoneNumber) <= 12) {
+            // Hợp lệ -> Update dữ liệu
+            strcpy(patients[index].phone, newPhoneNumber);
+            printf(">> Success: Phone number updated successfully for patient '%s'.\n", patients[index].name);
+            break; // Thoát vòng lặp
+        } else {
+            printf(">> Error: Phone number must be between 9 and 12 digits.\n");
         }
-        printf("Error!Invalid phone number ( must be minimum 9 digits, maximum 12 digits and only number ).\n");
     }
 }
-
 // #3
 void dischargePatient(){
     char id[20];
@@ -873,7 +909,7 @@ void viewMedicalHistory() {
     // Duyệt mảng records để tìm các lần khám của bệnh nhân này
     for (int i = 0; i < recordCount; i++) {
         // So sánh CardID trong record với ID vừa nhập
-        if (isStringEqualIgnoreCase(records[i].cardId, id) == 0) {
+        if (isStringEqualIgnoreCase(records[i].cardId, id)) {
             printf("%-10s | %-15s | %-20s\n",
                    records[i].recID,
                    records[i].date,
