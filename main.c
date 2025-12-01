@@ -31,6 +31,13 @@ int isStringEqualIgnoreCase(const char *s1, const char *s2);
 int findIndexPatient(char *id);
 int isNumeric(const char *str);
 int isValidDate( char *date);
+// Hàm chuyển đổi chuỗi sang chữ thường (để phục vụ tìm kiếm)
+void toLowerCase(char *dest, const char *src) {
+    for (int i = 0; src[i]; i++) {
+        dest[i] = tolower((unsigned char)src[i]);
+    }
+    dest[strlen(src)] = '\0'; // Kết thúc chuỗi
+}
 //#1
 void addPatient();
 //#2
@@ -539,34 +546,73 @@ void listPatients(){
     }
 }
 
-//#5
+// #5: Search Patient (Improved UX: Case-insensitive & Exit option)
 void searchPatient() {
-    char keyword[50];
-    printf("\n--- SEARCH PATIENT ---\n");
-    printf("Enter KEYWORD for Name to search: ");
-    fflush(stdin);
-    fgets(keyword, sizeof(keyword), stdin);
-    removeNewline(keyword);
-
-    if (strlen(keyword) == 0) {
-        printf("Error: Empty keyword.\n");
+    // 1. Kiểm tra dữ liệu
+    if (patientCount == 0) {
+        printf(">> System: No patients data to search.\n");
         return;
     }
-    int found = 0;
-    printf("\nSearch Results:\n");
-    printf("%-10s %-25s %-15s %-15s\n", "ID", "Name", "Phone", "Debt");
-    for (int i = 0; i < patientCount; i++) {
-        if (strstr(patients[i].name, keyword) != NULL) {
-            printf("%-10s %-25s %-15s %-15.0f\n",
-               patients[i].cardID,
-               patients[i].name,
-               patients[i].phone,
-               patients[i].debt);
-            found = 1;
+
+    char keyword[50];
+    char keywordLower[50]; // Biến phụ chứa từ khóa viết thường
+    char nameLower[50];    // Biến phụ chứa tên bệnh nhân viết thường
+
+    printf("\n--- SEARCH PATIENT BY NAME ---\n");
+
+    while (1) {
+        printf("Enter keyword to search (or enter '0' to return): ");
+        fflush(stdin);
+
+        if (fgets(keyword, sizeof(keyword), stdin) == NULL) continue;
+        removeNewline(keyword);
+
+        // --- CỬA THOÁT HIỂM ---
+        if (strcmp(keyword, "0") == 0) {
+            printf(">> Operation cancelled.\n");
+            return;
         }
-    }
-    if (!found) {
-        printf("No patients found.\n");
+
+        // Validate rỗng
+        if (strlen(keyword) == 0) {
+            printf(">> Error: Keyword cannot be empty.\n");
+            continue;
+        }
+
+        // --- XỬ LÝ TÌM KIẾM ---
+
+        // 1. Chuyển từ khóa nhập vào sang chữ thường
+        toLowerCase(keywordLower, keyword);
+
+        int found = 0;
+        printf("\n%-10s %-25s %-15s %-15s\n", "ID", "Name", "Phone", "Debt");
+        printf("------------------------------------------------------------------\n");
+
+        for (int i = 0; i < patientCount; i++) {
+            // 2. Chuyển tên bệnh nhân trong danh sách sang chữ thường (ra biến tạm)
+            toLowerCase(nameLower, patients[i].name);
+
+            // 3. Tìm kiếm trên 2 chuỗi đã viết thường
+            if (strstr(nameLower, keywordLower) != NULL) {
+                printf("%-10s %-25s %-15s %-15.0f\n",
+                       patients[i].cardID,
+                       patients[i].name,
+                       patients[i].phone,
+                       patients[i].debt);
+                found = 1;
+            }
+        }
+        printf("------------------------------------------------------------------\n");
+
+        if (found) {
+            printf(">> Search completed. Found match(es) above.\n");
+            // Sau khi tìm xong, thoát vòng lặp để quay về menu chính
+            // Hoặc bạn có thể để 'continue' nếu muốn user tìm tiếp
+            break;
+        } else {
+            printf(">> No result found for keyword '%s'. Try again.\n", keyword);
+            // Không break để cho người dùng nhập lại từ khóa khác ngay
+        }
     }
 }
 
@@ -785,17 +831,17 @@ void viewMedicalHistory() {
             printf(">> Operation cancelled by user.\n");
             return;
         }
-        // 3. Validate : Rỗng
+        // 3. Validate cơ bản: Rỗng
         if (strlen(id) == 0) {
             printf(">> Error: Input cannot be empty.\n");
             continue;
         }
-        // 4. Validate: Ký tự đầu là khoảng trắng
+        // 4. Validate cơ bản: Ký tự đầu là khoảng trắng
         if (id[0] == ' ') {
             printf(">> Error: ID cannot start with space.\n");
             continue;
         }
-        // 5. Validate: Chứa khoảng trắng ở giữa
+        // 5. Validate nâng cao: Chứa khoảng trắng ở giữa
         int hasSpace = 0;
         for (int i = 0; i < strlen(id); i++) {
             if (isspace((unsigned char)id[i])) {
