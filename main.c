@@ -33,7 +33,7 @@ int findIndexPatient(char *id);
 int isNumeric(const char *str);
 int isValidDate( char *date);
 void toLowerCase(char *dest, const char *src);
-void toTitleCase(char *str);
+void toTittleCase (char *str);
 //case
 void addPatient();
 void updatePatient();
@@ -90,7 +90,7 @@ int findIndexPatient(char *id) {
 }
 void toTittleCase(char *str) {
     int len = strlen(str);
-    int isFirstChar = 1;
+    int isFirstChar = 1;// Cờ đánh dấu ký tự đầu tiên của từ
     for ( int i =0; i < len; i++) {
         if (isspace((unsigned char)str[i])) {
             isFirstChar = 1;
@@ -265,7 +265,7 @@ void addPatient() {
             printf("Error: Name cannot start with a space.\n");
             continue;
         }
-        toTitleCase(p.name);
+        toTittleCase(p.name);
         break;
     }
     while (1) {
@@ -334,7 +334,7 @@ void addPatient() {
             continue;
         }
 
-        if (val <= 0) {
+        if (val < 0) {
             printf(">> Error: Debt must be strictly positive (> 0).\n");
             continue;
         }
