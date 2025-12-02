@@ -33,7 +33,8 @@ int findIndexPatient(char *id);
 int isNumeric(const char *str);
 int isValidDate( char *date);
 void toLowerCase(char *dest, const char *src);
-
+void toTitleCase(char *str);
+//case
 void addPatient();
 void updatePatient();
 void dischargePatient();
@@ -87,7 +88,22 @@ int findIndexPatient(char *id) {
     }
     return -1;
 }
-
+void toTittleCase(char *str) {
+    int len = strlen(str);
+    int isFirstChar = 1;
+    for ( int i =0; i < len; i++) {
+        if (isspace((unsigned char)str[i])) {
+            isFirstChar = 1;
+        }else {
+            if (isFirstChar == 1) {
+                str[i] = toupper((unsigned char)str[i]);
+                isFirstChar = 0;
+            }else {
+                str[i] = tolower((unsigned char)str[i]);
+            }
+        }
+    }
+}
 void toLowerCase(char *dest, const char *src) {
     for (int i = 0; src[i]; i++) {
         dest[i] = tolower((unsigned char)src[i]);
@@ -138,7 +154,7 @@ int isValidDate(char *date) {
     if (d < 1 || d > daysInMonth[m]) {
         return 0;
     }
-    return 1; 
+    return 1;
 }
 
 int main() {
@@ -211,7 +227,7 @@ void addPatient() {
         fflush(stdin);
         fgets(p.cardID,sizeof(p.cardID),stdin);
         removeNewline(p.cardID);
-        if (strlen(p.cardID) == 0) { 
+        if (strlen(p.cardID) == 0) {
             printf("Error! Patient card ID cannot be empty.\n");
             continue;
         }
@@ -249,6 +265,7 @@ void addPatient() {
             printf("Error: Name cannot start with a space.\n");
             continue;
         }
+        toTitleCase(p.name);
         break;
     }
     while (1) {
@@ -343,7 +360,7 @@ void updatePatient() {
         removeNewline(id);
         if (strcmp(id, "0") == 0) {
             printf(">> Operation cancelled by user.\n");
-            return; 
+            return;
         }
 
         if (strlen(id) == 0) {
@@ -413,7 +430,7 @@ void updatePatient() {
         if (strlen(newPhoneNumber) >= 9 && strlen(newPhoneNumber) <= 12) {
             strcpy(patients[index].phone, newPhoneNumber);
             printf(">> Success: Phone number updated successfully for patient '%s'.\n", patients[index].name);
-            break; 
+            break;
         } else {
             printf(">> Error: Phone number must be between 9 and 12 digits.\n");
         }
@@ -456,7 +473,7 @@ void dischargePatient(){
             return;
         }else {
             printf("\n>> Found Patient: %s | Debt: %.0f\n", patients[index].name, patients[index].debt);
-            break; 
+            break;
         }
     }
     char lastStatus[20] = "";
@@ -567,8 +584,8 @@ void searchPatient() {
     }
 
     char keyword[50];
-    char keywordLower[50]; 
-    char nameLower[50];    
+    char keywordLower[50];
+    char nameLower[50];
 
     printf("\n--- SEARCH PATIENT BY NAME ---\n");
 
@@ -706,7 +723,7 @@ void addRecordPatient() {
         removeNewline(id);
         if (strcmp(id, "0") == 0) {
             printf(">> Operation cancelled by user.\n");
-            return; 
+            return;
         }
         if ( strlen(id) == 0) {
             printf(">> Error: Input cannot be empty.\n");
@@ -751,7 +768,7 @@ void addRecordPatient() {
         removeNewline(date);
         if (strcmp(date, "0") == 0) {
             printf(">> Operation cancelled by user.\n");
-            return; 
+            return;
         }
         if (!isValidDate(date)) {
             printf(">> Error: Invalid date format or logic (use dd/mm/yyyy).\n");
@@ -765,9 +782,9 @@ void addRecordPatient() {
             }
         }if (isDuplicate) {
             printf(">> Error: Patient '%s' already has a record on %s.\n", id, date);
-            return; 
+            return;
         }
-        break; 
+        break;
     }
     int stChoice = 0;
     char status[20];
