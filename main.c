@@ -56,12 +56,12 @@ void initializeData() {
     // Tao mot vai ho so benh an mau (Records) tuong ung voi benh nhan
     Record recSeeds[] = {
         {"101", "P001", "10/01/2023", "Check-up"},
-        {"102", "P001", "15/02/2023", "Check-up"},
+        {"102", "P002", "15/02/2023", "Check-up"},
         {"103", "P003", "20/03/2023", "Discharged"},
-        {"104", "P006", "05/04/2023", "Check-up"},
-        {"105", "P006", "12/04/2023", "Check-up"},
-        {"106", "P009", "30/05/2023", "Check-up"},
-        {"107", "P015", "01/06/2023", "Check-up"}
+        {"104", "P004", "05/04/2023", "Check-up"},
+        {"105", "P005", "12/04/2023", "Check-up"},
+        {"106", "P006", "30/05/2023", "Check-up"},
+        {"107", "P007", "01/06/2023", "Check-up"}
     };
 
     int recSize = sizeof(recSeeds) / sizeof(recSeeds[0]);
