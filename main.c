@@ -25,7 +25,55 @@ Patient patients[MAX_PATIENTS];
 Record records[MAX_RECORDS];
 int patientCount = 0;
 int recordCount = 0;
+void initializeData() {
+    // Tao 15 benh nhan mau
+    Patient seeds[] = {
+        {"P001", "Nguyen Van An", "0901234567", 500000, 2},
+        {"P002", "Tran Thi Binh", "0912345678", 1200000, 1},
+        {"P003", "Le Van Cuong", "0987654321", 0, 3},
+        {"P004", "Pham Thi Dung", "0909090909", 4500000, 1},
+        {"P005", "Hoang Van Em", "0911223344", 250000, 0},
+        {"P006", "Vu Thi Hoa", "0933445566", 3000000, 5},
+        {"P007", "Dang Van Giang", "0944556677", 150000, 1},
+        {"P008", "Bui Thi Hanh", "0955667788", 800000, 2},
+        {"P009", "Do Van Hung", "0966778899", 5500000, 4},
+        {"P010", "Ngo Thi Kim", "0977889900", 100000, 0},
+        {"P011", "Ly Van Long", "0988990011", 900000, 1},
+        {"P012", "Truong Thi Mai", "0999001122", 2100000, 2},
+        {"P013", "Dinh Van Nam", "0912233445", 0, 0},
+        {"P014", "Vo Thi Oanh", "0923344556", 750000, 1},
+        {"P015", "Nguyen Van Phuc", "0934455667", 1250000, 3}
+    };
 
+    int seedSize = sizeof(seeds) / sizeof(seeds[0]);
+    for (int i = 0; i < seedSize; i++) {
+        if (patientCount < MAX_PATIENTS) {
+            patients[patientCount] = seeds[i];
+            patientCount++;
+        }
+    }
+
+    // Tao mot vai ho so benh an mau (Records) tuong ung voi benh nhan
+    Record recSeeds[] = {
+        {"101", "P001", "10/01/2023", "Check-up"},
+        {"102", "P001", "15/02/2023", "Check-up"},
+        {"103", "P003", "20/03/2023", "Discharged"},
+        {"104", "P006", "05/04/2023", "Check-up"},
+        {"105", "P006", "12/04/2023", "Check-up"},
+        {"106", "P009", "30/05/2023", "Check-up"},
+        {"107", "P015", "01/06/2023", "Check-up"}
+    };
+
+    int recSize = sizeof(recSeeds) / sizeof(recSeeds[0]);
+    for (int i = 0; i < recSize; i++) {
+        if (recordCount < MAX_RECORDS) {
+            records[recordCount] = recSeeds[i];
+            recordCount++;
+        }
+    }
+
+    printf("\n>> SYSTEM: Data initialized successfully (%d patients, %d records).\n", patientCount, recordCount);
+}
 void printMenu();
 void removeNewline();
 int isStringEqualIgnoreCase(const char *s1, const char *s2);
@@ -158,6 +206,7 @@ int isValidDate(char *date) {
 }
 
 int main() {
+    initializeData();
     int choice = 0;
     char buffer[100];
     while (1){
